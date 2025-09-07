@@ -5,6 +5,7 @@ import HomeScreen from "./screens/HomeScreen";
 import ManagementScreen from "./screens/ManagementScreen";
 import HistoryScreen from "./screens/HistoryScreen";
 import { NavigationContainer } from "@react-navigation/native";
+
 const Drawer = createDrawerNavigator();
 
 export default function App() {
