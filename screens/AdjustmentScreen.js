@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useEffect } from "react";
 import DayForm from "../components/DayForm";
 import { Button } from "react-native-paper";
+
 const AdjustmentScreen = ({ route, navigation }) => {
   const { employeeName } = route.params;
   useEffect(() => {
@@ -29,6 +30,7 @@ const AdjustmentScreen = ({ route, navigation }) => {
       {days.map((day) => (
         <DayForm key={day} day={day} />
       ))}
+      <Text style={styles.totalText}>Running Total: ₱1,250</Text>
       <Button
         icon="content-save"
         mode="contained"
@@ -36,7 +38,7 @@ const AdjustmentScreen = ({ route, navigation }) => {
         style={{ marginTop: 16, width: "70%" }}
         onPress={() => console.log("Pressed")}
       >
-        Press me
+        Save
       </Button>
     </View>
   );
@@ -65,7 +67,13 @@ const styles = StyleSheet.create({
   },
   headerCell: {
     fontWeight: "bold",
-    backgroundColor: "#d1d1d1",
+    color: "white",
+    backgroundColor: "#723ac0ff",
+  },
+  totalText: {
+    textAlign: "left",
+    fontWeight: "bold",
+    marginTop: 16,
   },
 });
 
