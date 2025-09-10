@@ -18,3 +18,27 @@ export function getCurrentWeekPeriod() {
   week.push(monday, sunday);
   return week;
 }
+export function getCurrentWeekDays() {
+  const weekDays = [];
+  const today = dayjs();
+  // Always get Monday as the start of the week
+  const startOfWeek = today.weekday(1);
+  for (let i = 0; i < 7; i++) {
+    weekDays.push(startOfWeek.add(i, "day").format("MM-DD-YYYY"));
+  }
+  return weekDays;
+}
+export function getTodayDate() {
+  return dayjs().format("MM-DD-YYYY");
+}
+export function getDaysOfTheWeek() {
+  return [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+}
