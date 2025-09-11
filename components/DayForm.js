@@ -2,14 +2,27 @@ import { View, StyleSheet, TextInput } from "react-native";
 import { Text } from "react-native-paper";
 import { IconButton, MD3Colors } from "react-native-paper";
 import { useState } from "react";
-const DayForm = ({ day }) => {
+import { getTodayDate } from "../utils/weekLogic";
+
+const DayForm = ({ day, date }) => {
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
 
   return (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>{day}</Text>
+      {getTodayDate() === date ? (
+        <Text
+          id={date}
+          style={[styles.tableCell, { fontWeight: "bold", color: "red" }]}
+        >
+          {day}
+        </Text>
+      ) : (
+        <Text id={date} style={styles.tableCell}>
+          {day}
+        </Text>
+      )}
       <TextInput style={[styles.tableCell, styles.inputContainer]} />
       <TextInput style={[styles.tableCell, styles.inputContainer]} />
       <View style={(styles.tableCell, { alignItems: "center" })}>
