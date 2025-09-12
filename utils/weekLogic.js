@@ -10,11 +10,11 @@ export function getCurrentWeekPeriod() {
   // Get the Monday of the current week (even if today is Sunday)
   const monday = today
     .weekday(1 - (today.weekday() === 0 ? 7 : 0))
-    .format("MM-DD-YYYY");
+    .format("YYYY-MM-DD");
   // Get the Sunday of the current week
   const sunday = today
     .weekday(7 - (today.weekday() === 0 ? 7 : 0))
-    .format("MM-DD-YYYY");
+    .format("YYYY-MM-DD");
   week.push(monday, sunday);
   return week;
 }
@@ -24,12 +24,12 @@ export function getCurrentWeekDays() {
   // Always get Monday as the start of the week
   const startOfWeek = today.weekday(1);
   for (let i = 0; i < 7; i++) {
-    weekDays.push(startOfWeek.add(i, "day").format("MM-DD-YYYY"));
+    weekDays.push(startOfWeek.add(i, "day").format("YYYY-MM-DD"));
   }
   return weekDays;
 }
 export function getTodayDate() {
-  return dayjs().format("MM-DD-YYYY");
+  return dayjs().format("YYYY-MM-DD");
 }
 export function getDaysOfTheWeek() {
   return [
