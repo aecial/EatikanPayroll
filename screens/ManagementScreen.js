@@ -13,11 +13,11 @@ import { useState, useEffect } from "react";
 import { getAllEmployees, addEmployee } from "../database/dbHelpers";
 const ManagementScreen = () => {
   const [employees, setEmployees] = useState([]);
+  const fetchEmployees = async () => {
+    const data = await getAllEmployees();
+    setEmployees(data);
+  };
   useEffect(() => {
-    const fetchEmployees = async () => {
-      const data = await getAllEmployees();
-      setEmployees(data);
-    };
     fetchEmployees();
     console.log(employees);
   }, []);
@@ -44,6 +44,7 @@ const ManagementScreen = () => {
     try {
       await addEmployee(empName, empRate);
       console.log("Employee successfully added");
+      await fetchEmployees();
       setEmpName("");
       setEmpRate("");
       hideModal();
