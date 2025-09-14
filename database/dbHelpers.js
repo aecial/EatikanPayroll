@@ -1,10 +1,19 @@
-import * as SQLite from "expo-sqlite/next";
+import * as SQLite from "expo-sqlite";
 
-const db = SQLite.openDatabaseSync("payroll.db");
+let dbInstance = null;
+
+// Function to get the single database instance
+export const getDb = async () => {
+  if (!dbInstance) {
+    dbInstance = await SQLite.openDatabaseAsync("payroll.db");
+  }
+  return dbInstance;
+};
 
 // ✅ Create tables
-export const initDB = () => {
-  db.execAsync(`
+export const initDB = async () => {
+  const db = await getDb();
+  await db.execAsync(`
     CREATE TABLE IF NOT EXISTS employees (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -25,11 +34,12 @@ export const initDB = () => {
 };
 
 // ✅ Add Employee
-export const addEmployee = async (name, position, rate) => {
-  return db.runAsync(
-    "INSERT INTO employees (name, position, rate) VALUES (?, ?, ?)",
-    [name, position, rate]
-  );
+export const addEmployee = async (name, rate) => {
+  const db = await getDb();
+  return await db.runAsync("INSERT INTO employees (name, rate) VALUES (?, ?)", [
+    name,
+    rate,
+  ]);
 };
 
 // ✅ Add Adjustment
@@ -40,16 +50,19 @@ export const addAdjustment = async (
   subtract,
   dayOff
 ) => {
-  return db.runAsync(
+  return await db.runAsync(
     `INSERT INTO adjustments (employee_id, date, add, subtract, day_off) 
      VALUES (?, ?, ?, ?, ?)`,
     [employeeId, date, add, subtract, dayOff]
   );
 };
-
+export const getAllEmployees = async () => {
+  const db = await getDb();
+  return await db.getAllAsync("SELECT * FROM employees");
+};
 // ✅ Mark Day Off (just a shortcut to addAdjustment with day_off = 1)
 export const markDayOff = async (employeeId, date) => {
-  return db.runAsync(
+  return await db.runAsync(
     `INSERT INTO adjustments (employee_id, date, day_off) VALUES (?, ?, 1)`,
     [employeeId, date]
   );

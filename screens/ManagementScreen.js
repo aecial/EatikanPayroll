@@ -9,23 +9,22 @@ import {
   PaperProvider,
   TextInput,
 } from "react-native-paper";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getAllEmployees, addEmployee } from "../database/dbHelpers";
 const ManagementScreen = () => {
-  const data = {
-    id: 1,
-    name: "Bea",
-    position: "Cook",
-    rate: 350,
-    id: 2,
-    name: "Neggy",
-    position: "Helper",
-    rate: 250,
-  };
-
-  const employees = [
-    { id: 1, name: "Bea", position: "Cook", rate: 350 },
-    { id: 2, name: "Neggy", position: "Helper", rate: 250 },
-  ];
+  const [employees, setEmployees] = useState([]);
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const data = await getAllEmployees();
+      setEmployees(data);
+    };
+    fetchEmployees();
+    console.log(employees);
+  }, []);
+  // const employees = [
+  //   { id: 1, name: "Bea", position: "Cook", rate: 350 },
+  //   { id: 2, name: "Neggy", position: "Helper", rate: 250 },
+  // ];
   const [visible, setVisible] = useState(false);
   const [empName, setEmpName] = useState("");
   const [empRate, setEmpRate] = useState("");
@@ -41,20 +40,29 @@ const ManagementScreen = () => {
     gap: 8,
     marginHorizontal: "auto",
   };
-  function addEmployee() {
-    setEmpName("");
-    setEmpRate("");
-    hideModal();
+  async function addEmployeeHandler() {
+    try {
+      await addEmployee(empName, empRate);
+      console.log("Employee successfully added");
+      setEmpName("");
+      setEmpRate("");
+      hideModal();
+    } catch (error) {
+      console.error("Failed to add employee:", error);
+    }
   }
   return (
     <PaperProvider>
       <View style={styles.container}>
         <Text variant="headlineMedium" style={{ textAlign: "center" }}>
-          Employees
+          {employees.length} Employees
         </Text>
-        <ListIconItem title={employees[0].name} />
-        <Divider theme={{ colors: { primary: "green" } }} />
-        <ListIconItem title={employees[1].name} />
+        {employees.map((emp) => (
+          <View key={emp.id}>
+            <ListIconItem title={emp.name} />
+            <Divider theme={{ colors: { primary: "green" } }} />
+          </View>
+        ))}
 
         <Portal>
           <Modal
@@ -81,7 +89,7 @@ const ManagementScreen = () => {
               icon={"account-plus"}
               text={"Add Employee"}
               size={"90%"}
-              onPress={() => addEmployee()}
+              onPress={() => addEmployeeHandler()}
             />
           </Modal>
         </Portal>
