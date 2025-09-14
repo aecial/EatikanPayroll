@@ -3,6 +3,8 @@ import Divider from "react-native-paper/src/components/Divider";
 import ListIconItem from "../components/ListIconItem";
 import { Text } from "react-native-paper";
 import FilledButton from "../components/FilledButton";
+import { Modal, Portal, Button, PaperProvider } from "react-native-paper";
+import { useState } from "react";
 const ManagementScreen = () => {
   const data = {
     id: 1,
@@ -19,18 +21,53 @@ const ManagementScreen = () => {
     { id: 1, name: "Bea", position: "Cook", rate: 350 },
     { id: 2, name: "Neggy", position: "Helper", rate: 250 },
   ];
+  const [visible, setVisible] = useState(false);
+
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
+  const containerStyle = {
+    backgroundColor: "white",
+    width: "90%",
+
+    height: "50%",
+    marginHorizontal: "auto",
+  };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium" style={{ textAlign: "center" }}>
-        Employees
-      </Text>
-      <ListIconItem title={employees[0].name} />
-      <Divider theme={{ colors: { primary: "green" } }} />
-      <ListIconItem title={employees[1].name} />
+    <PaperProvider>
+      <View style={styles.container}>
+        <Text variant="headlineMedium" style={{ textAlign: "center" }}>
+          Employees
+        </Text>
+        <ListIconItem title={employees[0].name} />
+        <Divider theme={{ colors: { primary: "green" } }} />
+        <ListIconItem title={employees[1].name} />
 
-      <FilledButton icon={"account-plus"} text={"Add Employee"} size={"90%"} />
-    </View>
+        <Portal>
+          <Modal
+            visible={visible}
+            onDismiss={hideModal}
+            contentContainerStyle={containerStyle}
+          >
+            <Text variant="headlineSmall" style={{ textAlign: "center" }}>
+              Add Employee
+            </Text>
+            <FilledButton
+              icon={"account-plus"}
+              text={"Add Employee"}
+              size={"90%"}
+              onPress={hideModal}
+            />
+          </Modal>
+        </Portal>
+        <FilledButton
+          icon={"account-plus"}
+          text={"Add Employee"}
+          size={"90%"}
+          onPress={showModal}
+        />
+      </View>
+    </PaperProvider>
   );
 };
 
