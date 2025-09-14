@@ -9,15 +9,15 @@ export const initDB = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       position TEXT,
-      rate REAL DEFAULT 0
+      rate INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS adjustments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       employee_id INTEGER,
       date TEXT,
-      add REAL DEFAULT 0,
-      subtract REAL DEFAULT 0,
+      add INTEGER DEFAULT 0,
+      subtract INTEGER DEFAULT 0,
       day_off INTEGER DEFAULT 0,
       FOREIGN KEY (employee_id) REFERENCES employees(id)
     );
