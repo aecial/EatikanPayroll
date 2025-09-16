@@ -41,6 +41,19 @@ export const addEmployee = async (name, rate) => {
     rate,
   ]);
 };
+//  Update Employee
+export const updateEmployee = async (id, name, rate) => {
+  const db = await getDb();
+  return await db.runAsync(
+    "UPDATE employees set name = ?, rate = ? WHERE id = ?",
+    [name, rate, id]
+  );
+};
+// Delete Employee
+export const deleteEmployee = async (id) => {
+  const db = await getDb();
+  return await db.runAsync("DELETE FROM employees WHERE id = ?", [id]);
+};
 
 // ✅ Add Adjustment
 export const addAdjustment = async (
@@ -50,6 +63,7 @@ export const addAdjustment = async (
   subtract,
   dayOff
 ) => {
+  const db = await getDb();
   return await db.runAsync(
     `INSERT INTO adjustments (employee_id, date, add, subtract, day_off) 
      VALUES (?, ?, ?, ?, ?)`,
@@ -62,6 +76,7 @@ export const getAllEmployees = async () => {
 };
 // ✅ Mark Day Off (just a shortcut to addAdjustment with day_off = 1)
 export const markDayOff = async (employeeId, date) => {
+  const db = await getDb();
   return await db.runAsync(
     `INSERT INTO adjustments (employee_id, date, day_off) VALUES (?, ?, 1)`,
     [employeeId, date]
@@ -70,6 +85,7 @@ export const markDayOff = async (employeeId, date) => {
 
 // ✅ Get Weekly Payroll Summary
 export const getWeeklyPayroll = async (employeeId, startDate, endDate) => {
+  const db = await getDb();
   const result = await db.getAllAsync(
     `SELECT e.name, e.rate,
             SUM(a.add) as total_add,
