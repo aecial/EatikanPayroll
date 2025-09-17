@@ -4,7 +4,7 @@ import { View, StyleSheet } from "react-native";
 import { useState } from "react";
 import { Modal, Portal, Button, Text, TextInput } from "react-native-paper";
 import FilledButton from "./FilledButton";
-import { updateEmployee } from "../database/dbHelpers";
+import { updateEmployee, deleteEmployee } from "../database/dbHelpers";
 const ListIconItem = ({ id, title, rate, fetchEmployees }) => {
   const [empName, setEmpName] = useState(title);
   const [empRate, setEmpRate] = useState(rate.toString());
@@ -35,6 +35,18 @@ const ListIconItem = ({ id, title, rate, fetchEmployees }) => {
       console.error("Failed to update employee:", error);
     }
   };
+  const handleRemove = async () => {
+    try {
+      console.log("Pressed Remove");
+      await deleteEmployee(id);
+      console.log("Employee successfully removed");
+      hideRemoveModal();
+      fetchEmployees();
+    } catch (error) {
+      console.error("Failed to remove employee:", error);
+    }
+  };
+
   return (
     <List.Item
       title={title}
@@ -80,6 +92,29 @@ const ListIconItem = ({ id, title, rate, fetchEmployees }) => {
             text={"Update"}
             onPress={showUpdateModal}
           />
+          <Portal>
+            <Modal
+              visible={removeVisible}
+              onDismiss={hideRemoveModal}
+              contentContainerStyle={containerStyle}
+            >
+              <Text variant="headlineMedium" style={{ textAlign: "center" }}>
+                Delete Employee #{id} {title}?
+              </Text>
+              <OutlinedButton
+                icon={"cancel"}
+                text={"Cancel"}
+                size={"90%"}
+                onPress={() => hideRemoveModal()}
+              />
+              <FilledButton
+                icon={"account-remove"}
+                text={"Delete"}
+                size={"90%"}
+                onPress={() => handleRemove()}
+              />
+            </Modal>
+          </Portal>
           <OutlinedButton
             icon={"head-remove"}
             text={"Remove"}
