@@ -25,11 +25,11 @@ const ManagementScreen = () => {
   //   { id: 1, name: "Bea", position: "Cook", rate: 350 },
   //   { id: 2, name: "Neggy", position: "Helper", rate: 250 },
   // ];
-  const [visible, setVisible] = useState(false);
+  const [Addvisible, setAddVisible] = useState(false);
   const [empName, setEmpName] = useState("");
   const [empRate, setEmpRate] = useState("");
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  const showAddModal = () => setAddVisible(true);
+  const hideAddModal = () => setAddVisible(false);
   const containerStyle = {
     backgroundColor: "white",
     width: "90%",
@@ -47,7 +47,7 @@ const ManagementScreen = () => {
       await fetchEmployees();
       setEmpName("");
       setEmpRate("");
-      hideModal();
+      hideAddModal();
     } catch (error) {
       console.error("Failed to add employee:", error);
     }
@@ -60,15 +60,20 @@ const ManagementScreen = () => {
         </Text>
         {employees.map((emp) => (
           <View key={emp.id}>
-            <ListIconItem title={emp.name} />
+            <ListIconItem
+              id={emp.id}
+              title={emp.name}
+              rate={emp.rate}
+              fetchEmployees={fetchEmployees}
+            />
             <Divider theme={{ colors: { primary: "green" } }} />
           </View>
         ))}
 
         <Portal>
           <Modal
-            visible={visible}
-            onDismiss={hideModal}
+            visible={Addvisible}
+            onDismiss={hideAddModal}
             contentContainerStyle={containerStyle}
           >
             <Text variant="headlineSmall" style={{ textAlign: "center" }}>
@@ -98,7 +103,7 @@ const ManagementScreen = () => {
           icon={"account-plus"}
           text={"Add Employee"}
           size={"90%"}
-          onPress={showModal}
+          onPress={showAddModal}
         />
       </View>
     </PaperProvider>

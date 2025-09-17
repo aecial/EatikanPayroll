@@ -44,9 +44,13 @@ export const addEmployee = async (name, rate) => {
 //  Update Employee
 export const updateEmployee = async (id, name, rate) => {
   const db = await getDb();
+  const parsedRate = parseInt(rate, 10);
+  if (isNaN(parsedRate)) {
+    throw new Error("Rate must be a valid number");
+  }
   return await db.runAsync(
     "UPDATE employees set name = ?, rate = ? WHERE id = ?",
-    [name, rate, id]
+    [name, parsedRate, id]
   );
 };
 // Delete Employee

@@ -1,7 +1,12 @@
 import { Button } from "react-native-paper";
 
-const OutlinedButton = ({ icon, text }) => (
-  <Button icon={icon} mode="outlined" onPress={() => console.log("Pressed")}>
+const OutlinedButton = ({ icon, text, onPress, size }) => (
+  <Button
+    icon={icon}
+    mode="outlined"
+    onPress={onPress}
+    style={{ width: size, marginHorizontal: "auto" }}
+  >
     {text}
   </Button>
 );
