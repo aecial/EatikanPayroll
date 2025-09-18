@@ -78,6 +78,10 @@ export const getAllEmployees = async () => {
   const db = await getDb();
   return await db.getAllAsync("SELECT * FROM employees");
 };
+export const getEmployee = async (id) => {
+  const db = await getDb();
+  return await db.getFirstAsync("SELECT * FROM employees WHERE id = ?", [id]);
+};
 // ✅ Mark Day Off (just a shortcut to addAdjustment with day_off = 1)
 export const markDayOff = async (employeeId, date) => {
   const db = await getDb();

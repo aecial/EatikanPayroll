@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import DayForm from "../components/DayForm";
 import { Button } from "react-native-paper";
 import {
@@ -7,13 +7,34 @@ import {
   getDaysOfTheWeek,
   getCurrentWeekPeriod,
 } from "../utils/weekLogic";
+import { getEmployee } from "../database/dbHelpers";
 const AdjustmentScreen = ({ route, navigation }) => {
   const weekDays = getCurrentWeekDays();
   const days = getDaysOfTheWeek();
-  const { employeeName } = route.params;
+  const { employeeId } = route.params;
+  const [employee, setEmployee] = useState({});
+  const fetchEmployee = async (employeeId) => {
+    try {
+      const data = await getEmployee(employeeId);
+      console.log("Fetched employee:", data);
+      if (data) {
+        setEmployee(data);
+      }
+    } catch (err) {
+      console.error("Error fetching employee:", err);
+    }
+  };
+
   useEffect(() => {
-    navigation.setOptions({ title: employeeName });
-  }, [navigation, employeeName]);
+    fetchEmployee(employeeId);
+  }, [employeeId]);
+
+  useEffect(() => {
+    if (employee?.name) {
+      navigation.setOptions({ title: employee.name });
+    }
+  }, [employee?.name, navigation]);
+
   return (
     <View style={styles.tableContainer}>
       <Text>Week Period:</Text>
@@ -31,7 +52,7 @@ const AdjustmentScreen = ({ route, navigation }) => {
       {days.map((day, idx) => (
         <DayForm key={day} day={day} date={weekDays[idx]} />
       ))}
-      <Text style={styles.totalText}>Running Total: ₱1,250</Text>
+      <Text style={styles.totalText}>Running Total: ₱{employee.rate}</Text>
       <Button
         icon="content-save"
         mode="contained"
