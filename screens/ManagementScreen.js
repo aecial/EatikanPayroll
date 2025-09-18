@@ -11,6 +11,7 @@ import {
 } from "react-native-paper";
 import { useState, useEffect } from "react";
 import { getAllEmployees, addEmployee } from "../database/dbHelpers";
+import OutlinedButton from "../components/OutlinedButton";
 const ManagementScreen = () => {
   const [employees, setEmployees] = useState([]);
   const fetchEmployees = async () => {
@@ -90,6 +91,12 @@ const ManagementScreen = () => {
               onChangeText={(text) => setEmpRate(text)}
               keyboardType="numeric"
               inputMode="numeric"
+            />
+            <OutlinedButton
+              icon={"cancel"}
+              text={"Cancel"}
+              size={"90%"}
+              onPress={() => hideAddModal()}
             />
             <FilledButton
               icon={"account-plus"}
