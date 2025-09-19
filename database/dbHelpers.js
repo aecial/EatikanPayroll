@@ -25,11 +25,15 @@ export const initDB = async () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       employee_id INTEGER,
       date TEXT,
-      add INTEGER DEFAULT 0,
-      subtract INTEGER DEFAULT 0,
+      add_amount INTEGER DEFAULT 0,
+      subtract_amount INTEGER DEFAULT 0,
       day_off INTEGER DEFAULT 0,
       FOREIGN KEY (employee_id) REFERENCES employees(id)
     );
+
+    -- ✅ Make sure each employee can only have one adjustment per day
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_employee_date 
+    ON adjustments(employee_id, date);
   `);
 };
 
@@ -63,15 +67,67 @@ export const deleteEmployee = async (id) => {
 export const addAdjustment = async (
   employeeId,
   date,
-  add,
-  subtract,
+  addAmount,
+  subtractAmount,
   dayOff
 ) => {
   const db = await getDb();
   return await db.runAsync(
-    `INSERT INTO adjustments (employee_id, date, add, subtract, day_off) 
+    `INSERT INTO adjustments (employee_id, date, add_amount, subtract_amount, day_off) 
      VALUES (?, ?, ?, ?, ?)`,
-    [employeeId, date, add, subtract, dayOff]
+    [employeeId, date, addAmount, subtractAmount, dayOff]
+  );
+};
+
+// ✅ Upsert Adjustment
+export const upsertAdjustment = async (
+  employeeId,
+  date,
+  addAmount,
+  subtractAmount,
+  dayOff
+) => {
+  const db = await getDb();
+  return await db.runAsync(
+    `INSERT INTO adjustments (employee_id, date, add_amount, subtract_amount, day_off)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(employee_id, date) DO UPDATE SET
+       add_amount = excluded.add_amount,
+       subtract_amount = excluded.subtract_amount,
+       day_off = excluded.day_off`,
+    [employeeId, date, addAmount, subtractAmount, dayOff]
+  );
+};
+
+// ✅ Save Weekly Adjustments
+export const saveWeeklyAdjustments = async (employeeId, adjustmentsArray) => {
+  const db = await getDb();
+
+  try {
+    await db.execAsync("BEGIN TRANSACTION");
+    for (const adj of adjustmentsArray) {
+      await db.runAsync(
+        `INSERT INTO adjustments (employee_id, date, add_amount, subtract_amount, day_off)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(employee_id, date) DO UPDATE SET
+           add_amount = excluded.add_amount,
+           subtract_amount = excluded.subtract_amount,
+           day_off = excluded.day_off`,
+        [employeeId, adj.date, adj.add, adj.subtract, adj.dayOff]
+      );
+    }
+    await db.execAsync("COMMIT");
+    return true;
+  } catch (err) {
+    await db.execAsync("ROLLBACK");
+    throw err;
+  }
+};
+export const getAllAdjustments = async (employeeId) => {
+  const db = await getDb();
+  return await db.getAllAsync(
+    "SELECT * FROM adjustments WHERE employee_id = ?",
+    [employeeId]
   );
 };
 export const getAllEmployees = async () => {
@@ -96,8 +152,8 @@ export const getWeeklyPayroll = async (employeeId, startDate, endDate) => {
   const db = await getDb();
   const result = await db.getAllAsync(
     `SELECT e.name, e.rate,
-            SUM(a.add) as total_add,
-            SUM(a.subtract) as total_subtract,
+            SUM(a.add_amount) as total_add,
+            SUM(a.subtract_amount) as total_subtract,
             SUM(a.day_off) as total_day_offs
      FROM employees e
      LEFT JOIN adjustments a ON e.id = a.employee_id

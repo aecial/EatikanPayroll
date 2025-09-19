@@ -7,12 +7,49 @@ import {
   getDaysOfTheWeek,
   getCurrentWeekPeriod,
 } from "../utils/weekLogic";
-import { getEmployee } from "../database/dbHelpers";
+import {
+  getEmployee,
+  saveWeeklyAdjustments,
+  getAllAdjustments,
+} from "../database/dbHelpers";
 const AdjustmentScreen = ({ route, navigation }) => {
   const weekDays = getCurrentWeekDays();
   const days = getDaysOfTheWeek();
   const { employeeId } = route.params;
   const [employee, setEmployee] = useState({});
+  const [adjustments, setAdjustments] = useState(
+    weekDays.map((date, idx) => ({
+      date,
+      day: days[idx],
+      add: 0,
+      subtract: 0,
+      dayOff: 0,
+    }))
+  );
+  const updateAdjustment = (date, field, value) => {
+    setAdjustments((prev) =>
+      prev.map((adj) => (adj.date === date ? { ...adj, [field]: value } : adj))
+    );
+  };
+  const calculateRunningTotal = () => {
+    if (!employee?.rate) return 0;
+
+    const basePay = employee.rate * 7; // base for whole week
+    const totalAdd = adjustments.reduce((sum, a) => sum + (a.add || 0), 0);
+    const totalSubtract = adjustments.reduce(
+      (sum, a) => sum + (a.subtract || 0),
+      0
+    );
+    const totalDayOffs = adjustments.reduce(
+      (sum, a) => sum + (a.dayOff ? 1 : 0),
+      0
+    );
+
+    // deduct 1 day's rate per day off
+    const dayOffDeduction = totalDayOffs * employee.rate;
+
+    return basePay + totalAdd - totalSubtract - dayOffDeduction;
+  };
   const fetchEmployee = async (employeeId) => {
     try {
       const data = await getEmployee(employeeId);
@@ -20,6 +57,21 @@ const AdjustmentScreen = ({ route, navigation }) => {
       if (data) {
         setEmployee(data);
       }
+      const adjustmentsData = await getAllAdjustments(employeeId);
+      console.log("Fetched adjustments:", adjustmentsData);
+
+      const merged = weekDays.map((date, idx) => {
+        const found = adjustmentsData.find((a) => a.date === date);
+        return {
+          date,
+          day: days[idx],
+          add: found ? found.add_amount : 0,
+          subtract: found ? found.subtract_amount : 0,
+          dayOff: found ? found.day_off : 0,
+        };
+      });
+
+      setAdjustments(merged);
     } catch (err) {
       console.error("Error fetching employee:", err);
     }
@@ -50,15 +102,32 @@ const AdjustmentScreen = ({ route, navigation }) => {
       </View>
       {/* Table Rows */}
       {days.map((day, idx) => (
-        <DayForm key={day} day={day} date={weekDays[idx]} />
+        <DayForm
+          key={day}
+          day={day}
+          date={weekDays[idx]}
+          adjustment={adjustments[idx]}
+          onChange={updateAdjustment}
+        />
       ))}
-      <Text style={styles.totalText}>Running Total: ₱{employee.rate}</Text>
+      <Text style={styles.totalText}>
+        Running Total: ₱{calculateRunningTotal()}
+      </Text>
       <Button
         icon="content-save"
         mode="contained"
         buttonColor="green"
         style={{ marginTop: 16, width: "70%" }}
-        onPress={() => console.log("Pressed Save")}
+        onPress={async () => {
+          try {
+            await saveWeeklyAdjustments(employeeId, adjustments);
+            alert("Adjustments saved!");
+            navigation.goBack();
+          } catch (err) {
+            console.error("Error saving:", err);
+            alert("Failed to save adjustments.");
+          }
+        }}
       >
         Save
       </Button>

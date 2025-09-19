@@ -12,7 +12,14 @@ const Drawer = createDrawerNavigator();
 
 export default function App() {
   useEffect(() => {
-    initDB();
+    (async () => {
+      try {
+        await initDB();
+        console.log("✅ Database initialized");
+      } catch (err) {
+        console.error("❌ DB init error:", err);
+      }
+    })();
   }, []);
   return (
     <NavigationContainer>

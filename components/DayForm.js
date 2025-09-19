@@ -4,7 +4,7 @@ import { IconButton, MD3Colors } from "react-native-paper";
 import { useState } from "react";
 import { getTodayDate } from "../utils/weekLogic";
 
-const DayForm = ({ day, date }) => {
+const DayForm = ({ day, date, adjustment, onChange }) => {
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
@@ -12,26 +12,45 @@ const DayForm = ({ day, date }) => {
   return (
     <View style={styles.tableRow}>
       {getTodayDate() === date ? (
-        <Text
-          id={date}
-          style={[styles.tableCell, { fontWeight: "bold", color: "red" }]}
-        >
+        <Text style={[styles.tableCell, { fontWeight: "bold", color: "red" }]}>
           {day}
         </Text>
       ) : (
-        <Text id={date} style={styles.tableCell}>
-          {day}
-        </Text>
+        <Text style={styles.tableCell}>{day}</Text>
       )}
-      <TextInput style={[styles.tableCell, styles.inputContainer]} />
-      <TextInput style={[styles.tableCell, styles.inputContainer]} />
-      <View style={(styles.tableCell, { alignItems: "center" })}>
+
+      <TextInput
+        style={[styles.tableCell, styles.inputContainer]}
+        keyboardType="numeric"
+        value={String(adjustment.add || "")}
+        onChangeText={(val) => onChange(date, "add", parseInt(val || 0))}
+        editable={adjustment.dayOff !== 1}
+      />
+
+      <TextInput
+        style={[styles.tableCell, styles.inputContainer]}
+        keyboardType="numeric"
+        value={String(adjustment.subtract || "")}
+        onChangeText={(val) => onChange(date, "subtract", parseInt(val || 0))}
+        editable={adjustment.dayOff !== 1}
+      />
+
+      <View style={{ flex: 1, alignItems: "center" }}>
         <IconButton
           icon="account-off"
-          iconColor={MD3Colors.error50}
+          iconColor={adjustment.dayOff === 1 ? MD3Colors.error50 : "green"}
           size={20}
-          style={{ selfAlign: "center" }}
-          onPress={() => console.log("Pressed")}
+          onPress={() => {
+            if (adjustment.dayOff === 1) {
+              // turn OFF day off
+              onChange(date, "dayOff", 0);
+            } else {
+              // turn ON day off → also reset add & subtract
+              onChange(date, "dayOff", 1);
+              onChange(date, "add", 0);
+              onChange(date, "subtract", 0);
+            }
+          }}
         />
       </View>
     </View>
