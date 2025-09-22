@@ -164,3 +164,32 @@ export const getWeeklyPayroll = async (employeeId, startDate, endDate) => {
 
   return result.length > 0 ? result[0] : null;
 };
+// ✅ Get Weekly Payroll History
+export async function getWeeklyPayrollHistory() {
+  try {
+    const db = await getDb();
+    const result = await db.getAllAsync(
+      `SELECT 
+  a.employee_id,
+  e.name AS employee_name,
+  strftime('%Y-%W', a.date) AS week_key,
+  date(a.date, 'weekday 1', '-7 days') AS week_start,
+  date(date(a.date, 'weekday 1', '-7 days'), '+6 days') AS week_end,
+  SUM(
+    CASE 
+      WHEN a.day_off = 1 THEN 0
+      ELSE (e.rate + IFNULL(a.add_amount,0) - IFNULL(a.subtract_amount,0))
+    END
+  ) AS net_pay
+FROM adjustments a
+JOIN employees e ON e.id = a.employee_id
+WHERE strftime('%Y-%W', a.date) < strftime('%Y-%W', 'now')
+GROUP BY a.employee_id, week_key
+ORDER BY week_start DESC;`
+    );
+    return result;
+  } catch (err) {
+    console.error("Error fetching weekly payroll history:", err);
+    return [];
+  }
+}
