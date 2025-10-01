@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import HistoryRow from "../components/HistoryRow";
 import { getWeeklyPayrollHistory } from "../database/dbHelpers";
 
-const HistoryList = () => {
+const HistoryList = ({ navigation }) => {
   const [history, setHistory] = useState([]);
   useEffect(() => {
     fetchHistory();
@@ -23,10 +23,13 @@ const HistoryList = () => {
         data={history}
         renderItem={({ item }) => (
           <HistoryRow
+            employeeId={item.employee_id}
             name={item.employee_name}
             netPay={item.net_pay}
+            weekKey={item.week_key}
             weekStart={item.week_start}
             weekEnd={item.week_end}
+            navigation={navigation}
           />
         )}
         keyExtractor={(item, index) => index.toString()}
